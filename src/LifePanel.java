@@ -92,16 +92,16 @@ public class LifePanel extends JPanel implements ActionListener{
 
     private void spawn(Graphics g){
 
-        if (starts){
-            for(int x = 0; x<life.length; x++){
-                for (int y = 0;y< (yHeight); y++){
-                    if((int)(Math.random()*5) == 0){
-                        beforeLife[x][y] = 1;
-                    }
-                }
-            }
-            starts  = false;
-        }
+//        if (starts){
+//            for(int x = 0; x<life.length; x++){
+//                for (int y = 0;y< (yHeight); y++){
+//                    if((int)(Math.random()*5) == 0){
+//                        beforeLife[x][y] = 1;
+//                    }
+//                }
+//            }
+//            starts  = false;
+//        }
     }
 
     private void display(Graphics g){
