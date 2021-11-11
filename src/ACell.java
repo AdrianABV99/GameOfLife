@@ -1,6 +1,5 @@
 public class ACell {
     private boolean full;// ate 10 times
-    private boolean satieted;
     private int numberOfEatingTimes;
     private int age;
 
@@ -9,36 +8,32 @@ public class ACell {
     private int maxSatietyDuration;
     private int maxStarvationLevel;
 
-    //coord
-    private int x;
-    private int y;
+    private Coordinates coord;
 
     public ACell(int x, int y, int satietyDuration, int starvationLevel) {
-        this.x = x;
-        this.y = y;
+        coord = new Coordinates(x,y);
 
         this.full = false;
-        this.satieted = false;
         this.numberOfEatingTimes = 0;
         this.age = 0;
 
         this.maxSatietyDuration = satietyDuration;
         this.maxStarvationLevel = starvationLevel;
 
-        this.satietyDuration = 0;
+        this.satietyDuration = satietyDuration;
         this.starvationLevel = 0;
     }
 
-    public ACell() {
+    public ACell(int x, int y) {
+        coord = new Coordinates(x,y);
         this.full = false;
-        this.satieted = false;
         this.numberOfEatingTimes = 0;
         this.age = 0;
 
         this.maxSatietyDuration = 5;
-        this.maxStarvationLevel = 8;
+        this.maxStarvationLevel = 13;
 
-        this.satietyDuration = 0;
+        this.satietyDuration = 5;
         this.starvationLevel = 0;
     }
 
@@ -48,28 +43,45 @@ public class ACell {
 
         if(satietyDuration > 0) {
             satietyDuration--;
-            if(satietyDuration == 0)
-            {
-                satieted = false;
-            }
         }
         else
         {
-            satieted = false;
             starvationLevel++;
         }
 
         return age;
     }
 
-    public int eatFood()
+    public int moveCell(int x, int y)
     {
-        numberOfEatingTimes++;
-        satietyDuration = maxSatietyDuration;
-        starvationLevel = 0;
-        if(numberOfEatingTimes >= 10) full = true;
+        coord.changeCoord(x,y);
+        return ageCell();
+    }
 
-        return numberOfEatingTimes;
+    public int getX()
+    {
+       return coord.getX();
+    }
+
+    public int getY()
+    {
+        return coord.getY();
+    }
+
+    public int eatFood(int food)
+    {
+        if(food>0) {
+            numberOfEatingTimes += food;
+            satietyDuration = maxSatietyDuration;
+            starvationLevel = 0;
+            if (numberOfEatingTimes >= 10) full = true;
+
+            return numberOfEatingTimes;
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     public boolean isFull()
@@ -77,13 +89,19 @@ public class ACell {
         return full;
     }
 
-    public boolean isSatieted()
+    public boolean isSatiated()
     {
-        return satieted;
+        return satietyDuration > 0;
     }
 
 
+    public boolean isAlive()
+    {
+        if(starvationLevel == maxStarvationLevel) return false;
+        else return true;
+    }
 
-
-
+    public int getStarvationLevel() {
+        return starvationLevel;
+    }
 }

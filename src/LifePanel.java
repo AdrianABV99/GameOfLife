@@ -2,6 +2,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 
 public class LifePanel extends JPanel implements ActionListener{
@@ -12,9 +13,12 @@ public class LifePanel extends JPanel implements ActionListener{
     int yHeight = yPanel / size;
     int[][] life = new int[xWidth][yHeight];
     int[][] beforeLife = new int[xWidth][yHeight];
+    int[][] food = new int[xWidth][yHeight];
     boolean starts = true;
     boolean pause = false;
 
+    ArrayList<ACell> cellA = new ArrayList<ACell>();
+    int noCells=0;
 
     public  LifePanel(){
         setSize( 1300, 700);
@@ -91,17 +95,27 @@ public class LifePanel extends JPanel implements ActionListener{
     }
 
     private void spawn(Graphics g){
-
 //        if (starts){
-//            for(int x = 0; x<life.length; x++){
-//                for (int y = 0;y< (yHeight); y++){
-//                    if((int)(Math.random()*5) == 0){
-//                        beforeLife[x][y] = 1;
-//                    }
-//                }
-//            }
-//            starts  = false;
-//        }
+////            for(int x = 0; x<life.length; x++){
+////                for (int y = 0;y< (yHeight); y++){
+////                    if((int)(Math.random()*5)%14 == 1){
+////                        food[x][y] = 1;
+////                    }
+////                }
+////            }
+////            starts  = false;
+////        }
+
+        if (starts){
+            for(int x = 0; x<life.length; x++){
+                for (int y = 0;y< (yHeight); y++){
+                    if((x*y)%44==1){
+                        food[x][y] = 1;
+                    }
+                }
+            }
+            starts  = false;
+        }
     }
 
     private void display(Graphics g){
@@ -109,12 +123,19 @@ public class LifePanel extends JPanel implements ActionListener{
 
         coppyArray();;
 
-        for(int x = 0; x<life.length; x++){
+        for(int x = 0; x<noCells; x++){
+            if(cellA.get(x).isAlive()) g.fillRect(cellA.get(x).getX()*size,cellA.get(x).getY()*size,size,size);
+
+        }
+
+        g.setColor(Color.BLUE);
+        for(int x = 0; x<food.length; x++){
             for (int y = 0;y< (yHeight); y++){
-                if(life[x][y] == 1)
+                if(food[x][y] == 1)
                     g.fillRect(x*size,y*size,size,size);
             }
         }
+
     }
 
     private void coppyArray(){
@@ -125,46 +146,80 @@ public class LifePanel extends JPanel implements ActionListener{
         }
     }
 
-    private int check(int x, int y){
-        int alive = 0;
+    private int checkForFood(int x, int y)
+    {
+        int noFood = 0;
 
-        alive += life[(x + xWidth - 1) % xWidth][(y + yHeight -1) % yHeight];
-        alive += life[(x + xWidth) % xWidth][(y + yHeight - 1) % yHeight];
-        alive += life[(x + xWidth +1 ) % xWidth][(y + yHeight - 1) % yHeight];
-        alive += life[(x + xWidth - 1) % xWidth][(y + yHeight) % yHeight];
-        alive += life[(x + xWidth + 1) % xWidth][(y + yHeight) % yHeight];
-        alive += life[(x + xWidth - 1) % xWidth][(y + yHeight + 1) % yHeight];
-        alive += life[(x + xWidth) % xWidth][(y + yHeight + 1) % yHeight];
-        alive += life[(x + xWidth + 1) % xWidth][(y + yHeight + 1) % yHeight];
+        noFood += food[(x + xWidth - 1) % xWidth][(y + yHeight -1) % yHeight];
+        food[(x + xWidth - 1) % xWidth][(y + yHeight -1) % yHeight]=0;
 
-        return alive;
+        noFood += food[(x + xWidth) % xWidth][(y + yHeight - 1) % yHeight];
+        food[(x + xWidth) % xWidth][(y + yHeight - 1) % yHeight]=0;
+
+        noFood += food[(x + xWidth +1 ) % xWidth][(y + yHeight - 1) % yHeight];
+        food[(x + xWidth +1 ) % xWidth][(y + yHeight - 1) % yHeight]=0;
+
+        noFood += food[(x + xWidth - 1) % xWidth][(y + yHeight) % yHeight];
+        food[(x + xWidth - 1) % xWidth][(y + yHeight) % yHeight]=0;
+
+        noFood += food[(x + xWidth + 1) % xWidth][(y + yHeight) % yHeight];
+        food[(x + xWidth + 1) % xWidth][(y + yHeight) % yHeight]=0;
+
+        noFood += food[(x + xWidth - 1) % xWidth][(y + yHeight + 1) % yHeight];
+        food[(x + xWidth - 1) % xWidth][(y + yHeight + 1) % yHeight]=0;
+
+        noFood += food[(x + xWidth) % xWidth][(y + yHeight + 1) % yHeight];
+        food[(x + xWidth) % xWidth][(y + yHeight + 1) % yHeight]=0;
+
+        noFood += food[(x + xWidth + 1) % xWidth][(y + yHeight + 1) % yHeight];
+        food[(x + xWidth + 1) % xWidth][(y + yHeight + 1) % yHeight]=0;
+
+        return noFood;
+    }
+
+    private boolean check(int i){
+        int x = cellA.get(i).getX();
+        int y = cellA.get(i).getY();
+
+        cellA.get(i).eatFood(checkForFood(x,y));
+
+        return cellA.get(i).isAlive();
     }
 
     public void actionPerformed(ActionEvent e){
-        int alive ;
+        boolean alive ;
 
         if(!pause) {
-            for (int x = 0; x < life.length; x++) {
-                for (int y = 0; y < (yHeight); y++) {
 
-                    alive = check(x, y);
 
-                    if (alive == 3) {
-                        beforeLife[x][y] = 1;
-                    } else if (alive == 2 && life[x][y] == 1) {
-                        beforeLife[x][y] = 1;
-                    } else {
-                        beforeLife[x][y] = 0;
-                    }
+            for(int i = 0; i<noCells; i++){
+
+                int x = cellA.get(i).getX();
+                int y = cellA.get(i).getY();
+
+                alive = check(i);
+                System.out.println(cellA.get(i).isSatiated());
+
+                if (alive) {
+                    cellA.get(i).moveCell(x+1,y);
                 }
+                else {
+                    noCells--;
+                    cellA.remove(cellA.get(i));
+                }
+
             }
+
         }
+
         repaint();
     }
 
     private void spawnCellAt(int x,int y){
         life[x/size][y/size] = 1;
         beforeLife[x/size][y/size] = 1;
+        cellA.add(new ACell(x/size, y/size));
+        noCells++;
     }
 
     public void putOnPause(){

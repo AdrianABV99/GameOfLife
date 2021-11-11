@@ -3,6 +3,7 @@ import javax.swing.JFrame;
 
 public class LifeFrame extends JFrame{
 
+
     public LifeFrame(){
 
         add(new LifePanel());
@@ -13,6 +14,7 @@ public class LifeFrame extends JFrame{
     }
 
     public static void main(String[] args){
-        new LifeFrame();
+
+       new LifeFrame();
     }
 }
