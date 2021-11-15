@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
+import static java.lang.Math.*;
+
 
 public class LifePanel extends JPanel implements ActionListener{
 
@@ -13,11 +15,14 @@ public class LifePanel extends JPanel implements ActionListener{
     int yHeight = yPanel / size;
     int[][] life = new int[xWidth][yHeight];
     int[][] beforeLife = new int[xWidth][yHeight];
+
     int[][] food = new int[xWidth][yHeight];
+    ArrayList<Coordinates> foodCoord = new ArrayList<>();
+
     boolean starts = true;
     boolean pause = false;
 
-    ArrayList<ACell> cellA = new ArrayList<ACell>();
+    ArrayList<ACell> cellA = new ArrayList<>();
     int noCells=0;
 
     public  LifePanel(){
@@ -30,7 +35,7 @@ public class LifePanel extends JPanel implements ActionListener{
             public void mouseClicked(MouseEvent e) {
                 int x = e.getX();
                 int y = e.getY();
-                System.out.println(x+" "+y);
+//                System.out.println(x+" "+y);
                 spawnCellAt( x, y);
             }
             @Override
@@ -111,6 +116,7 @@ public class LifePanel extends JPanel implements ActionListener{
                 for (int y = 0;y< (yHeight); y++){
                     if((x*y)%44==1){
                         food[x][y] = 1;
+                        foodCoord.add(new Coordinates(x,y));
                     }
                 }
             }
@@ -121,7 +127,7 @@ public class LifePanel extends JPanel implements ActionListener{
     private void display(Graphics g){
         g.setColor(Color.GREEN);
 
-        coppyArray();;
+        coppyArray();
 
         for(int x = 0; x<noCells; x++){
             if(cellA.get(x).isAlive()) g.fillRect(cellA.get(x).getX()*size,cellA.get(x).getY()*size,size,size);
@@ -149,30 +155,72 @@ public class LifePanel extends JPanel implements ActionListener{
     private int checkForFood(int x, int y)
     {
         int noFood = 0;
+        int auxX, auxY;
 
-        noFood += food[(x + xWidth - 1) % xWidth][(y + yHeight -1) % yHeight];
-        food[(x + xWidth - 1) % xWidth][(y + yHeight -1) % yHeight]=0;
+        auxX = (x + xWidth - 1) % xWidth;
+        auxY = (y + yHeight -1) % yHeight;
+        if(food[auxX][auxY]==1) {
+            noFood += food[auxX][auxY];
+            food[auxX][auxY] = 0;
+            foodCoord.remove(new Coordinates(auxX,auxY));
+        }
 
-        noFood += food[(x + xWidth) % xWidth][(y + yHeight - 1) % yHeight];
-        food[(x + xWidth) % xWidth][(y + yHeight - 1) % yHeight]=0;
+        auxX = (x + xWidth) % xWidth;
+        auxY = (y + yHeight -1) % yHeight;
+        if(food[auxX][auxY]==1) {
+            noFood += food[auxX][auxY];
+            food[auxX][auxY] = 0;
+            foodCoord.remove(new Coordinates(auxX,auxY));
+        }
 
-        noFood += food[(x + xWidth +1 ) % xWidth][(y + yHeight - 1) % yHeight];
-        food[(x + xWidth +1 ) % xWidth][(y + yHeight - 1) % yHeight]=0;
+        auxX = (x + xWidth + 1) % xWidth;
+        auxY = (y + yHeight -1) % yHeight;
+        if(food[auxX][auxY]==1) {
+            noFood += food[auxX][auxY];
+            food[auxX][auxY] = 0;
+            foodCoord.remove(new Coordinates(auxX,auxY));
+        }
 
-        noFood += food[(x + xWidth - 1) % xWidth][(y + yHeight) % yHeight];
-        food[(x + xWidth - 1) % xWidth][(y + yHeight) % yHeight]=0;
+        auxX = (x + xWidth - 1) % xWidth;
+        auxY = (y + yHeight ) % yHeight;
+        if(food[auxX][auxY]==1) {
+            noFood += food[auxX][auxY];
+            food[auxX][auxY] = 0;
+            foodCoord.remove(new Coordinates(auxX,auxY));
+        }
 
-        noFood += food[(x + xWidth + 1) % xWidth][(y + yHeight) % yHeight];
-        food[(x + xWidth + 1) % xWidth][(y + yHeight) % yHeight]=0;
+        auxX = (x + xWidth + 1) % xWidth;
+        auxY = (y + yHeight ) % yHeight;
+        if(food[auxX][auxY]==1) {
+            noFood += food[auxX][auxY];
+            food[auxX][auxY] = 0;
+            foodCoord.remove(new Coordinates(auxX,auxY));
+        }
 
-        noFood += food[(x + xWidth - 1) % xWidth][(y + yHeight + 1) % yHeight];
-        food[(x + xWidth - 1) % xWidth][(y + yHeight + 1) % yHeight]=0;
+        auxX = (x + xWidth - 1) % xWidth;
+        auxY = (y + yHeight + 1) % yHeight;
+        if(food[auxX][auxY]==1) {
+            noFood += food[auxX][auxY];
+            food[auxX][auxY] = 0;
+            foodCoord.remove(new Coordinates(auxX,auxY));
+        }
 
-        noFood += food[(x + xWidth) % xWidth][(y + yHeight + 1) % yHeight];
-        food[(x + xWidth) % xWidth][(y + yHeight + 1) % yHeight]=0;
+        auxX = (x + xWidth ) % xWidth;
+        auxY = (y + yHeight +1) % yHeight;
+        if(food[auxX][auxY]==1) {
+            noFood += food[auxX][auxY];
+            food[auxX][auxY] = 0;
+            foodCoord.remove(new Coordinates(auxX,auxY));
+        }
 
-        noFood += food[(x + xWidth + 1) % xWidth][(y + yHeight + 1) % yHeight];
-        food[(x + xWidth + 1) % xWidth][(y + yHeight + 1) % yHeight]=0;
+        auxX = (x + xWidth + 1) % xWidth;
+        auxY = (y + yHeight + 1) % yHeight;
+        if(food[auxX][auxY]==1) {
+            noFood += food[auxX][auxY];
+            food[auxX][auxY] = 0;
+            foodCoord.remove(new Coordinates(auxX,auxY));
+        }
+
 
         return noFood;
     }
@@ -194,14 +242,21 @@ public class LifePanel extends JPanel implements ActionListener{
 
             for(int i = 0; i<noCells; i++){
 
-                int x = cellA.get(i).getX();
-                int y = cellA.get(i).getY();
+                int cellX = cellA.get(i).getX();
+                int cellY = cellA.get(i).getY();
 
                 alive = check(i);
-                System.out.println(cellA.get(i).isSatiated());
-
+                System.out.println("Cell = " + cellA.get(i).getCoord().toString());
+                System.out.println("Food = " +  closestFood(cellA.get(i).getCoord()).toString());
                 if (alive) {
-                    cellA.get(i).moveCell(x+1,y);
+                    Coordinates foodC = closestFood(cellA.get(i).getCoord());
+                    System.out.println(foodC.getX() + " " + foodC.getY() );
+
+                    int directionX = (int) signum(foodC.getX() - cellX);
+                    int directionY = (int) signum(foodC.getY() - cellY);
+                    System.out.println(directionX + " " + directionY + '\n');
+
+                    cellA.get(i).moveCell(cellX + directionX, cellY + directionY);
                 }
                 else {
                     noCells--;
@@ -229,4 +284,35 @@ public class LifePanel extends JPanel implements ActionListener{
     public void putOnContinue(){
         pause = false;
     }
+
+    private Coordinates closestFood(Coordinates cellCoord)
+    {
+        Coordinates closestFood;
+        Coordinates auxCoord;
+
+        int cellX = cellCoord.getX();
+        int cellY = cellCoord.getY();
+
+        double closestDist;
+        double auxDist;
+
+        closestFood = foodCoord.get(0);
+        closestDist = Math.max(abs(closestFood.getX() - cellX), abs(closestFood.getY() - cellY));
+
+        int i;
+        for(i=1; i<foodCoord.size(); i++)
+        {
+            auxCoord=foodCoord.get(i);
+            auxDist = Math.max(abs(auxCoord.getX() - cellX), abs(auxCoord.getY() - cellY));
+
+            if(auxDist < closestDist) {
+                closestFood = auxCoord;
+                closestDist = auxDist;
+            }
+
+        }
+
+        return closestFood;
+    }
+
 }

@@ -5,8 +5,8 @@ public class ACell {
 
     private int satietyDuration;
     private int starvationLevel;
-    private int maxSatietyDuration;
-    private int maxStarvationLevel;
+    private final int maxSatietyDuration;
+    private final int maxStarvationLevel;
 
     private Coordinates coord;
 
@@ -58,6 +58,8 @@ public class ACell {
         return ageCell();
     }
 
+    public Coordinates getCoord(){return coord;}
+
     public int getX()
     {
        return coord.getX();
@@ -97,8 +99,7 @@ public class ACell {
 
     public boolean isAlive()
     {
-        if(starvationLevel == maxStarvationLevel) return false;
-        else return true;
+        return starvationLevel != maxStarvationLevel;
     }
 
     public int getStarvationLevel() {
