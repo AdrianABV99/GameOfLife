@@ -1,6 +1,6 @@
 import java.util.Objects;
 
-public class ACell {
+abstract public class Cell {
     private int fullness;// ate 10 times
     private int numberOfEatingTimes;
     private int age;
@@ -12,7 +12,7 @@ public class ACell {
 
     private Coordinates coord;
 
-    public ACell(int x, int y, int satietyDuration, int starvationLevel) {
+    public Cell(int x, int y, int satietyDuration, int starvationLevel) {
         coord = new Coordinates(x,y);
 
         this.fullness = 0;
@@ -26,7 +26,7 @@ public class ACell {
         this.starvationLevel = 0;
     }
 
-    public ACell(int x, int y) {
+    public Cell(int x, int y) {
         coord = new Coordinates(x,y);
         this.fullness = 0;
         this.numberOfEatingTimes = 0;
@@ -64,7 +64,7 @@ public class ACell {
 
     public int getX()
     {
-       return coord.getX();
+        return coord.getX();
     }
 
     public int getY()
@@ -91,17 +91,12 @@ public class ACell {
 
     public boolean isFull()
     {
-        return fullness==10;
+        return fullness>=10;
     }
 
     public void resetFullness()
     {
         fullness=0;
-    }
-
-    public boolean canReproduce()
-    {
-        return isFull();
     }
 
     public boolean isAlive()
@@ -125,8 +120,8 @@ public class ACell {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ACell aCell = (ACell) o;
-        return coord.equals(aCell.coord);
+        Cell cell = (Cell) o;
+        return coord.equals(cell.coord);
     }
 
     @Override
@@ -134,4 +129,5 @@ public class ACell {
         return Objects.hash(coord);
     }
 
+    public abstract  boolean canReproduce();
 }
