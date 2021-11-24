@@ -3,7 +3,6 @@ import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
 
@@ -17,7 +16,6 @@ public class LifePanel extends JPanel implements ActionListener{
     int xWidth = xPanel / size;
     int yHeight = yPanel / size;
     int[][] life = new int[xWidth][yHeight];
-    int[][] beforeLife = new int[xWidth][yHeight];
 
 
 
@@ -26,7 +24,7 @@ public class LifePanel extends JPanel implements ActionListener{
     boolean pause = false;
 
     ArrayList<Coordinates> foodCoord = new ArrayList<>();
-    ArrayList<ACell> cellA = new ArrayList<>();
+    ArrayList<Cell> cellA = new ArrayList<>();
     int noCells=0;
 
     public  LifePanel(){
@@ -128,8 +126,8 @@ public class LifePanel extends JPanel implements ActionListener{
         }
 
         g.setColor(Color.BLUE);
-        for(int i = 0; i<foodCoord.size();i++){
-                    g.fillRect(foodCoord.get(i).getX()*size,foodCoord.get(i).getY()*size,size,size);
+        for (Coordinates coordinates : foodCoord) {
+            g.fillRect(coordinates.getX() * size, coordinates.getY() * size, size, size);
 
         }
 
@@ -165,12 +163,6 @@ public class LifePanel extends JPanel implements ActionListener{
         int food;
         if((food = checkForFood(x,y))!=0) {
             cellA.get(i).eatFood(food);
-            if(cellA.get(i).isFull()) {
-                System.out.println(cellA.get(i).isFull());
-            } else
-            {
-                System.out.println(cellA.get(i).isFull());
-            }
         }
 
 
@@ -228,11 +220,12 @@ public class LifePanel extends JPanel implements ActionListener{
                     else {
 
                         Coordinates foodC = closestFood(cellA.get(i).getCoord());
-
-                        int directionX = (int) signum(foodC.getX() - cellX);
-                        int directionY = (int) signum(foodC.getY() - cellY);
-
-                        cellA.get(i).moveCell(cellX + directionX, cellY + directionY);
+                        if(foodC == null) cellA.get(i).ageCell();
+                        else {//move cell
+                            int directionX = (int) signum(foodC.getX() - cellX);
+                            int directionY = (int) signum(foodC.getY() - cellY);
+                            cellA.get(i).moveCell(cellX + directionX, cellY + directionY);
+                        }
                     }
                 }
                 //died
@@ -255,12 +248,12 @@ public class LifePanel extends JPanel implements ActionListener{
     }
 
     private void spawnCellAt(int x,int y){
-        cellA.add(new ACell(x/size, y/size));
+        cellA.add(new ACell('A',x/size, y/size));
         noCells++;
     }
 
     private void spawnCellAt2(int x,int y){
-        cellA.add(new ACell(x, y));
+        cellA.add(new ACell('A',x, y));
         noCells++;
     }
 
@@ -295,6 +288,8 @@ public class LifePanel extends JPanel implements ActionListener{
 
     private Coordinates closestFood(Coordinates cellCoord)
     {
+        if(foodCoord.isEmpty()) return null;
+
         Coordinates closestFood;
         Coordinates auxCoord;
 

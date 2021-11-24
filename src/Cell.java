@@ -1,18 +1,23 @@
 import java.util.Objects;
 
 abstract public class Cell {
-    private int fullness;// ate 10 times
-    private int numberOfEatingTimes;
-    private int age;
+    protected char type;
+    protected int fullness;// ate 10 times
+    protected int numberOfEatingTimes;
+    protected int age;
 
-    private int satietyDuration;
-    private int starvationLevel;
-    private final int maxSatietyDuration;
-    private final int maxStarvationLevel;
+    protected int satietyDuration;
+    protected int starvationLevel;
+    protected final int maxSatietyDuration;
+    protected final int maxStarvationLevel;
 
-    private Coordinates coord;
+    protected Coordinates coord;
 
-    public Cell(int x, int y, int satietyDuration, int starvationLevel) {
+    public Cell(char t, int x, int y, int satietyDuration, int starvationLevel) {
+
+        if(t!='A' || t!='S') t = 'A';
+        this.type = t;
+
         coord = new Coordinates(x,y);
 
         this.fullness = 0;
@@ -26,16 +31,20 @@ abstract public class Cell {
         this.starvationLevel = 0;
     }
 
-    public Cell(int x, int y) {
+    public Cell(char t, int x, int y) {
+
+        if(t!='A' || t!='S') t = 'A';
+        this.type = t;
+
         coord = new Coordinates(x,y);
         this.fullness = 0;
         this.numberOfEatingTimes = 0;
         this.age = 0;
 
-        this.maxSatietyDuration = 5;
-        this.maxStarvationLevel = 10;
+        this.maxSatietyDuration = 3;
+        this.maxStarvationLevel = 18;
 
-        this.satietyDuration = 5;
+        this.satietyDuration = maxSatietyDuration;
         this.starvationLevel = 0;
     }
 
