@@ -1,7 +1,9 @@
 import javax.swing.JFrame;
+import java.util.ArrayList;
 
 
 public class LifeFrame extends JFrame{
+
 
     public LifeFrame(){
 
@@ -13,6 +15,8 @@ public class LifeFrame extends JFrame{
     }
 
     public static void main(String[] args){
-        new LifeFrame();
+
+       new LifeFrame();
+
     }
 }

@@ -1,2 +1,2 @@
 # GameOfLife
-A project 
+the project 
