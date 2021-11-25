@@ -35,8 +35,8 @@ public class LifePanel extends JPanel implements ActionListener{
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
+                int x = e.getX()/size;
+                int y = e.getY()/size;
 
                 spawnCellAt( x, y);
             }
