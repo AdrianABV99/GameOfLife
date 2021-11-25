@@ -8,7 +8,6 @@ import java.util.Random;
 import static java.lang.Math.*;
 
 
-
 public class LifePanel extends JPanel implements ActionListener{
 
     enum ClickType{
@@ -25,6 +24,7 @@ public class LifePanel extends JPanel implements ActionListener{
     int xWidth = xPanel / size;
     int yHeight = yPanel / size;
     int[][] life = new int[xWidth][yHeight];
+
     boolean starts = true;
     boolean pause = false;
     ClickType spawn = ClickType.cell;
@@ -150,7 +150,6 @@ public class LifePanel extends JPanel implements ActionListener{
         for (Coordinates coordinates : foodCoord) {
             g.fillRect(coordinates.getX() * size, coordinates.getY() * size, size, size);
         }
-
     }
 
     private int checkForFood(int x, int y)
@@ -271,6 +270,7 @@ public class LifePanel extends JPanel implements ActionListener{
                             int directionX = (int) signum(foodC.getX() - cellX);
                             int directionY = (int) signum(foodC.getY() - cellY);
                             cellA.get(i).moveCell(cellX + directionX, cellY + directionY);
+
                         }
                     }
                 }
