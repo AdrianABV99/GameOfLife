@@ -24,7 +24,7 @@ public class LifePanel extends JPanel implements ActionListener{
     boolean pause = false;
 
     ArrayList<Coordinates> foodCoord = new ArrayList<>();
-    ArrayList<Cell> cellA = new ArrayList<>();
+    ArrayList<Cell> cell = new ArrayList<>();
     int noCells=0;
 
     public  LifePanel(){
@@ -121,7 +121,7 @@ public class LifePanel extends JPanel implements ActionListener{
 
 
         for(int x = 0; x<noCells; x++){
-            if(cellA.get(x).isAlive()) g.fillRect(cellA.get(x).getX()*size,cellA.get(x).getY()*size,size,size);
+            if(cell.get(x).isAlive()) g.fillRect(cell.get(x).getX()*size, cell.get(x).getY()*size,size,size);
 
         }
 
@@ -157,23 +157,23 @@ public class LifePanel extends JPanel implements ActionListener{
     }
 
     private boolean checkCell(int i){
-        int x = cellA.get(i).getX();
-        int y = cellA.get(i).getY();
+        int x = cell.get(i).getX();
+        int y = cell.get(i).getY();
 
         int food;
         if((food = checkForFood(x,y))!=0) {
-            cellA.get(i).eatFood(food);
+            cell.get(i).eatFood(food);
         }
 
 
-        if( cellA.get(i).canReproduce() )
+        if( cell.get(i).canReproduce() )
         {
-            spawnCellAround(cellA.get(i).getCoord());
-            cellA.get(i).resetFullness();
-            cellA.get(i).resetSatiety();
+            spawnCellAround(cell.get(i).getCoord());
+            cell.get(i).resetFullness();
+            cell.get(i).resetSatiety();
         }
 
-        return cellA.get(i).isAlive();
+        return cell.get(i).isAlive();
     }
 
     private ArrayList<Coordinates> checkSpaceAround(Coordinates coord)
@@ -189,7 +189,7 @@ public class LifePanel extends JPanel implements ActionListener{
                     int auxY = coord.getY() +j;
                     Coordinates auxCoord = new Coordinates(auxX,auxY);
                     if(!(foodCoord.contains(auxCoord)
-                        ||  cellA.contains(auxCoord) ))
+                        ||  cell.contains(auxCoord) ))
                     {
                         freeSpace.add(auxCoord);
                     }
@@ -210,21 +210,21 @@ public class LifePanel extends JPanel implements ActionListener{
 
             for(int i = 0; i<noCells; i++){
 
-                int cellX = cellA.get(i).getX();
-                int cellY = cellA.get(i).getY();
+                int cellX = cell.get(i).getX();
+                int cellY = cell.get(i).getY();
 
                 alive = checkCell(i);
                 if (alive) {
 
-                    if(cellA.get(i).getSatiationLevel()>0) cellA.get(i).ageCell();
+                    if(cell.get(i).getSatiationLevel()>0) cell.get(i).ageCell();
                     else {
 
-                        Coordinates foodC = closestFood(cellA.get(i).getCoord());
-                        if(foodC == null) cellA.get(i).ageCell();
+                        Coordinates foodC = closestFood(cell.get(i).getCoord());
+                        if(foodC == null) cell.get(i).ageCell();
                         else {//move cell
                             int directionX = (int) signum(foodC.getX() - cellX);
                             int directionY = (int) signum(foodC.getY() - cellY);
-                            cellA.get(i).moveCell(cellX + directionX, cellY + directionY);
+                            cell.get(i).moveCell(cellX + directionX, cellY + directionY);
                         }
                     }
                 }
@@ -233,8 +233,8 @@ public class LifePanel extends JPanel implements ActionListener{
                     noCells--;
                     Random random = new Random();
                     int randomNumber = random.nextInt(6 - 1) + 1;
-                    Coordinates deadCoord = cellA.get(i).getCoord();
-                    cellA.remove(cellA.get(i));
+                    Coordinates deadCoord = cell.get(i).getCoord();
+                    cell.remove(cell.get(i));
 
                     spawnFoodAround(deadCoord,randomNumber);
 
@@ -247,13 +247,9 @@ public class LifePanel extends JPanel implements ActionListener{
         repaint();
     }
 
-    private void spawnCellAt(int x,int y){
-        cellA.add(new ACell('A',x/size, y/size));
-        noCells++;
-    }
 
-    private void spawnCellAt2(int x,int y){
-        cellA.add(new ACell('A',x, y));
+    private void spawnCellAt(int x, int y){
+        cell.add(new ACell('A',x, y));
         noCells++;
     }
 
@@ -263,8 +259,8 @@ public class LifePanel extends JPanel implements ActionListener{
         Collections.shuffle(freeSpace);
         int auxX = freeSpace.get(0).getX();
         int auxY =freeSpace.get(0).getY();
-        spawnCellAt2(auxX,auxY);
-        cellA.get(noCells-1).resetSatiety();
+        spawnCellAt(auxX,auxY);
+        cell.get(noCells-1).resetSatiety();
     }
 
     private void spawnFoodAround(Coordinates coord, int noFood)
