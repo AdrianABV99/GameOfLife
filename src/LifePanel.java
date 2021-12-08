@@ -372,9 +372,11 @@ public class LifePanel extends JPanel implements ActionListener{
 
     private boolean isEmptySpace(Coordinates coord)
     {
+
+
         return !(foodCoord.contains(coord)
-                ||  cellArray.contains(new SCell(coord.getX(),coord.getX()))
-                ||  cellArray.contains(new ACell(coord.getX(),coord.getX()))
+                ||  cellArray.contains(new SCell(coord.getX(),coord.getY()))
+                ||  cellArray.contains(new ACell(coord.getX(),coord.getY()))
                 );
     }
 
