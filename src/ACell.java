@@ -2,17 +2,19 @@ import java.util.Objects;
 
 public class ACell extends Cell {
 
-    public ACell(char t, int x, int y, int satietyDuration, int starvationLevel) {
-        super(t, x,y,satietyDuration,starvationLevel);
+    public ACell(int x, int y, int satietyDuration, int starvationLevel) {
+        super(x,y,satietyDuration,starvationLevel);
+        this.setType('A');
     }
 
-    public ACell(char t, int x, int y) {
-        super(t, x, y);
+    public ACell(int x, int y) {
+        super(x, y);
+        this.setType('A');
     }
 
     @Override
     public boolean canReproduce() {
-        return this.fullness >= 10;
+        return this.getFullness() >= 10;
     }
 
 }
