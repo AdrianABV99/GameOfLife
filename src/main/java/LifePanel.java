@@ -4,6 +4,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.lang.Math.*;
 
@@ -13,7 +15,7 @@ public class LifePanel extends JPanel implements ActionListener{
     enum ClickType{
         food,
         cell
-    };
+    }
 
     JButton buttonCell = new JButton();
     JButton buttonFood = new JButton();
@@ -32,6 +34,7 @@ public class LifePanel extends JPanel implements ActionListener{
 
     ArrayList<Coordinates> foodCoord = new ArrayList<>();
     ArrayList<Cell> cellA = new ArrayList<>();
+    Producer producer = new Producer();
     int noCells=0;
 
     public  LifePanel(){
@@ -238,7 +241,7 @@ public class LifePanel extends JPanel implements ActionListener{
         }
         if(e.getSource() == pauseButton){
 
-            if(pause == false){
+            if(!pause ){
                 pauseButton.setBackground(Color.RED);
                 pauseButton.setForeground(Color.BLACK);
                 pauseButton.setText("CONTINUE");
@@ -299,7 +302,9 @@ public class LifePanel extends JPanel implements ActionListener{
     }
 
     private void spawnCellAt(int x, int y){
-        cellA.add(new ACell('A',x, y));
+        Cell c = new ACell('A',x, y);
+        cellA.add(c);
+        producer.send(c.hashCode(),c.toString());
         noCells++;
     }
 
