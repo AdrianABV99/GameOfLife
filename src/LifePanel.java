@@ -31,8 +31,8 @@ public class LifePanel extends JPanel implements ActionListener{
 
 
     ArrayList<Coordinates> foodCoord = new ArrayList<>();
-    ArrayList<Cell> cellA = new ArrayList<>();
-    int noCells=0;
+    ArrayList<Cell> cellArray = new ArrayList<>();
+    int currentCellFromArray;
 
     public  LifePanel(){
 
@@ -73,12 +73,10 @@ public class LifePanel extends JPanel implements ActionListener{
                 int x = e.getX()/size;
                 int y = e.getY()/size;
                 if(spawn == ClickType.cell){
-                    System.out.println("Spawn cell");
-                    spawnCellAt( x, y);
+                    spawnCellAt(x, y, 's');
                 }
                 if(spawn == ClickType.food){
                     spawnFoodAt( x, y);
-                    System.out.println("Spawn food");
                 }
             }
             @Override
@@ -137,11 +135,13 @@ public class LifePanel extends JPanel implements ActionListener{
     }
 
     private void display(Graphics g){
-        g.setColor(Color.GREEN);
 
-        for(int x = 0; x<noCells; x++){
-            if(cellA.get(x).isAlive()) {
-                g.fillRect(cellA.get(x).getX() * size, cellA.get(x).getY() * size, size, size);
+
+        for(int x = 0; x<cellArray.size(); x++){
+            if(cellArray.get(x).isAlive()) {
+                if(cellArray.get(x).getType() == 'S') g.setColor(Color.RED);
+                else g.setColor(Color.GREEN);
+                g.fillRect(cellArray.get(x).getX() * size, cellArray.get(x).getY() * size, size, size);
             }
 
         }
@@ -175,49 +175,18 @@ public class LifePanel extends JPanel implements ActionListener{
         return noFood;
     }
 
-    private boolean checkCell(int i){
-        int x = cellA.get(i).getX();
-        int y = cellA.get(i).getY();
+    private boolean checkCell(int celPos){
+        int x = cellArray.get(celPos).getX();
+        int y = cellArray.get(celPos).getY();
 
         int food;
         if((food = checkForFood(x,y))!=0) {
-            cellA.get(i).eatFood(food);
+            cellArray.get(celPos).eatFood(food);
         }
 
 
-        if( cellA.get(i).canReproduce() )
-        {
-            spawnCellAround(cellA.get(i).getCoord());
-            cellA.get(i).resetFullness();
-            cellA.get(i).resetSatiety();
-        }
-        return cellA.get(i).isAlive();
+        return cellArray.get(celPos).isAlive();
     }
-
-    private ArrayList<Coordinates> checkSpaceAround(Coordinates coord)
-    {
-        ArrayList<Coordinates> freeSpace = new ArrayList<>();
-
-        for(int i=-1; i<=1; i++)
-            for(int j=-1;j<=1;j++)
-            {
-                if(!(i==0 && j==0))
-                {
-                    int auxX = coord.getX() +i;
-                    int auxY = coord.getY() +j;
-                    Coordinates auxCoord = new Coordinates(auxX,auxY);
-                    if(!(foodCoord.contains(auxCoord)
-                        ||  cellA.contains(auxCoord) ))
-                    {
-                        freeSpace.add(auxCoord);
-                    }
-                }
-            }
-
-        return freeSpace;
-
-    }
-
 
 
     public void actionPerformed(ActionEvent e){
@@ -238,7 +207,7 @@ public class LifePanel extends JPanel implements ActionListener{
         }
         if(e.getSource() == pauseButton){
 
-            if(pause == false){
+            if(!pause){
                 pauseButton.setBackground(Color.RED);
                 pauseButton.setForeground(Color.BLACK);
                 pauseButton.setText("CONTINUE");
@@ -253,39 +222,98 @@ public class LifePanel extends JPanel implements ActionListener{
         }
 
         if(!pause) {
-            for(int i = 0; i<noCells; i++){
+            for( currentCellFromArray=0; currentCellFromArray<cellArray.size(); currentCellFromArray++){
 
-                int cellX = cellA.get(i).getX();
-                int cellY = cellA.get(i).getY();
 
-                alive = checkCell(i);
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //START THREAD
+
+                Cell currentCell = cellArray.get(currentCellFromArray);
+                int cellX = currentCell.getX();
+                int cellY = currentCell.getY();
+
+                alive = checkCell(currentCellFromArray);
                 if (alive) {
 
-                    if(cellA.get(i).getSatiationLevel()>0) cellA.get(i).ageCell();
+                    if(currentCell.isFull() && currentCell.getType() == 'S'){
+
+                        Coordinates partnerC = closestPartner(currentCell.getCoord());
+
+
+
+                        if(partnerC == null){
+                            if(currentCell.getSatiationLevel()>0) currentCell.ageCell();
+                            else {
+
+                                Coordinates foodC = closestFood(currentCell.getCoord());
+                                if(foodC == null) currentCell.ageCell();
+                                else {//move cell
+                                    int directionX = (int) signum(foodC.getX() - cellX);
+                                    int directionY = (int) signum(foodC.getY() - cellY);
+                                    if(isEmptySpace(new Coordinates(cellX + directionX,cellY + directionY)))
+                                        currentCell.moveCell(cellX + directionX, cellY + directionY);
+
+                                }
+                            }
+                        }
+
+
+                        else {//move cell
+                            int distToPartener = Math.max(abs(partnerC.getX() - cellX), abs(partnerC.getY() - cellY));
+
+                            if(distToPartener <= 1)
+                            {
+                                int otherCelIndex = cellArray.indexOf(new SCell(partnerC.getX(),partnerC.getY()));
+
+                                spawnCellAround(currentCell.getCoord(),currentCell.getType());
+                                currentCell.resetFullness();
+                                cellArray.get(otherCelIndex).resetFullness();
+
+                            }
+                            else {
+                                int directionX = (int) signum(partnerC.getX() - cellX);
+                                int directionY = (int) signum(partnerC.getY() - cellY);
+                                if (isEmptySpace(new Coordinates(cellX + directionX, cellY + directionY)))
+                                    currentCell.moveCell(cellX + directionX, cellY + directionY);
+                            }
+
+                        }
+                    }
+                    else if( currentCell.isFull() && currentCell.getType() == 'A')
+                    {
+                        spawnCellAround(currentCell.getCoord(),currentCell.getType());
+                        currentCell.resetFullness();
+                        currentCell.resetSatiety();
+                    }
+                    else if(currentCell.getSatiationLevel()>0) currentCell.ageCell();
                     else {
 
-                        Coordinates foodC = closestFood(cellA.get(i).getCoord());
-                        if(foodC == null) cellA.get(i).ageCell();
+                        Coordinates foodC = closestFood(currentCell.getCoord());
+                        if(foodC == null) currentCell.ageCell();
                         else {//move cell
                             int directionX = (int) signum(foodC.getX() - cellX);
                             int directionY = (int) signum(foodC.getY() - cellY);
-                            cellA.get(i).moveCell(cellX + directionX, cellY + directionY);
+                            if(isEmptySpace(new Coordinates(cellX + directionX,cellY + directionY)))
+                                currentCell.moveCell(cellX + directionX, cellY + directionY);
 
                         }
                     }
                 }
                 //died
                 else {
-                    noCells--;
                     Random random = new Random();
                     int randomNumber = random.nextInt(6 - 1) + 1;
-                    Coordinates deadCoord = cellA.get(i).getCoord();
-                    cellA.remove(cellA.get(i));
+                    Coordinates deadCoord = currentCell.getCoord();
+                    cellArray.remove(currentCell);
 
                     spawnFoodAround(deadCoord,randomNumber);
 
                 }
 
+
+
+                //END THREAD
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
 
         }
@@ -298,19 +326,23 @@ public class LifePanel extends JPanel implements ActionListener{
         foodCoord.add(new Coordinates(x, y));
     }
 
-    private void spawnCellAt(int x, int y){
-        cellA.add(new ACell('A',x, y));
-        noCells++;
+    private void spawnCellAt(int x, int y,char cellType){
+        if(cellType == 'A' || cellType == 'a') cellArray.add(new ACell(x, y));
+        else if(cellType == 'S' || cellType == 's') cellArray.add(new SCell(x, y));
+        else return;
     }
 
-    private void spawnCellAround(Coordinates coord)
+    private void spawnCellAround(Coordinates coord, char type)
     {
         ArrayList<Coordinates> freeSpace = checkSpaceAround(coord);
         Collections.shuffle(freeSpace);
         int auxX = freeSpace.get(0).getX();
         int auxY =freeSpace.get(0).getY();
-        spawnCellAt(auxX,auxY);
-        cellA.get(noCells-1).resetSatiety();
+        if(type == 'S') spawnCellAt(auxX,auxY,'s');
+        else spawnCellAt(auxX,auxY,'a');
+
+        int indexOfCell = cellArray.indexOf(new SCell(coord.getX(),coord.getY()));
+        cellArray.get(indexOfCell).resetSatiety();
     }
 
     private void spawnFoodAround(Coordinates coord, int noFood)
@@ -323,6 +355,41 @@ public class LifePanel extends JPanel implements ActionListener{
             foodCoord.add(freeSpace.get(i));
         }
     }
+
+    private ArrayList<Coordinates> checkSpaceAround(Coordinates coord)
+    {
+        ArrayList<Coordinates> freeSpace = new ArrayList<>();
+
+        for(int i=-1; i<=1; i++)
+            for(int j=-1;j<=1;j++)
+            {
+                if(!(i==0 && j==0))
+                {
+                    int auxX = coord.getX() +i;
+                    int auxY = coord.getY() +j;
+                    Coordinates auxCoord = new Coordinates(auxX,auxY);
+                    if(isEmptySpace(auxCoord))
+                    {
+                        freeSpace.add(auxCoord);
+                    }
+                }
+            }
+
+        return freeSpace;
+
+    }
+
+    private boolean isEmptySpace(Coordinates coord)
+    {
+
+
+        return !(foodCoord.contains(coord)
+                ||  cellArray.contains(new SCell(coord.getX(),coord.getY()))
+                ||  cellArray.contains(new ACell(coord.getX(),coord.getY()))
+                );
+    }
+
+
 
     public void putOnPause(){
         pause = true;
@@ -362,6 +429,50 @@ public class LifePanel extends JPanel implements ActionListener{
         }
 
         return closestFood;
+    }
+
+
+    private Coordinates closestPartner(Coordinates cellCoord)
+    {
+        ArrayList <Coordinates> possiblePartnerCoord = new ArrayList<>();
+        for(Cell c : cellArray)
+        {
+            if(c.getType()=='S' &&
+                    c.isFull() &&
+                    c.getCoord() != cellCoord)
+            {
+                possiblePartnerCoord.add(c.getCoord());
+            }
+        }
+
+        if(possiblePartnerCoord.isEmpty()) return null;
+
+        Coordinates closestPartner;
+        Coordinates auxCoord;
+
+        int cellX = cellCoord.getX();
+        int cellY = cellCoord.getY();
+
+        double closestDist;
+        double auxDist;
+
+        closestPartner = possiblePartnerCoord.get(0);
+        closestDist = Math.max(abs(closestPartner.getX() - cellX), abs(closestPartner.getY() - cellY));
+
+        int i;
+        for(i=1; i<possiblePartnerCoord.size(); i++)
+        {
+            auxCoord=possiblePartnerCoord.get(i);
+            auxDist = Math.max(abs(auxCoord.getX() - cellX), abs(auxCoord.getY() - cellY));
+
+            if(auxDist < closestDist) {
+                closestPartner = auxCoord;
+                closestDist = auxDist;
+            }
+
+        }
+
+        return closestPartner;
     }
 
 }
