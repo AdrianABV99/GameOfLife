@@ -12,10 +12,12 @@ public class LifePanel extends JPanel implements ActionListener{
 
     enum ClickType{
         food,
-        cell
+        cell,
+        cellA
     };
 
     JButton buttonCell = new JButton();
+    JButton buttonCellA = new JButton();
     JButton buttonFood = new JButton();
     JButton pauseButton = new JButton();
 
@@ -39,12 +41,21 @@ public class LifePanel extends JPanel implements ActionListener{
         // type spawn buttons pannel
         buttonCell.setBounds(xPanel - 130,10,100,50);
         buttonCell.addActionListener(this);
-        buttonCell.setText("SET CELL");
+        buttonCell.setText("SET S CELL");
         buttonCell.setFocusable(false);
-        buttonCell.setBackground(new Color(30,177,0));
-        buttonCell.setForeground(new Color(123,1,23));
+        buttonCell.setBackground(new Color(12, 169, 217));
+        buttonCell.setForeground(new Color(255, 255, 255));
         this.add(buttonCell);
-        buttonFood.setBounds(xPanel - 130,70,100,50);
+
+        buttonCellA.setBounds(xPanel - 130,70,100,50);
+        buttonCellA.addActionListener(this);
+        buttonCellA.setText("SET A CELL");
+        buttonCellA.setFocusable(false);
+        buttonCellA.setBackground(new Color(30,177,0));
+        buttonCellA.setForeground(new Color(255, 255, 255));
+        this.add(buttonCellA);
+
+        buttonFood.setBounds(xPanel - 130,130,100,50);
         buttonFood.addActionListener(this);
         buttonFood.setText("SET FOOD");
         buttonFood.setFocusable(false);
@@ -52,7 +63,8 @@ public class LifePanel extends JPanel implements ActionListener{
         buttonFood.setForeground(new Color(255,255,255));
         this.add(buttonFood);
 
-        pauseButton.setBounds(xPanel - 130,130,100,50);
+
+        pauseButton.setBounds(xPanel - 130,190,100,50);
         pauseButton.addActionListener(this);
         pauseButton.setText("PAUSE");
         pauseButton.setFocusable(false);
@@ -74,6 +86,9 @@ public class LifePanel extends JPanel implements ActionListener{
                 int y = e.getY()/size;
                 if(spawn == ClickType.cell){
                     spawnCellAt(x, y, 's');
+                }
+                if(spawn == ClickType.cellA){
+                    spawnCellAt(x, y, 'a');
                 }
                 if(spawn == ClickType.food){
                     spawnFoodAt( x, y);
@@ -192,17 +207,25 @@ public class LifePanel extends JPanel implements ActionListener{
     public void actionPerformed(ActionEvent e){
         boolean alive ;
 
-
+        if(e.getSource() == buttonCellA){
+            spawn = ClickType.cellA;
+            System.out.println("push the cellA button");
+            buttonFood.setForeground(Color.WHITE);
+            buttonCell.setForeground(Color.WHITE);
+            buttonCellA.setForeground(Color.RED);
+        }
         if(e.getSource() == buttonCell){
             spawn = ClickType.cell;
             System.out.println("push the cell button");
             buttonFood.setForeground(Color.WHITE);
+            buttonCellA.setForeground(Color.WHITE);
             buttonCell.setForeground(Color.RED);
         }
         if(e.getSource() == buttonFood){
             spawn = ClickType.food;
             System.out.println("push the food button");
             buttonCell.setForeground(Color.WHITE);
+            buttonCellA.setForeground(Color.WHITE);
             buttonFood.setForeground(Color.RED);
         }
         if(e.getSource() == pauseButton){
@@ -281,9 +304,10 @@ public class LifePanel extends JPanel implements ActionListener{
                     }
                     else if( currentCell.isFull() && currentCell.getType() == 'A')
                     {
-                        spawnCellAround(currentCell.getCoord(),currentCell.getType());
-                        currentCell.resetFullness();
-                        currentCell.resetSatiety();
+
+//                        spawnCellAround(currentCell.getCoord(),currentCell.getType());
+//                        currentCell.resetFullness();
+//                        currentCell.resetSatiety();
                     }
                     else if(currentCell.getSatiationLevel()>0) currentCell.ageCell();
                     else {
@@ -343,6 +367,7 @@ public class LifePanel extends JPanel implements ActionListener{
 
         int indexOfCell = cellArray.indexOf(new SCell(coord.getX(),coord.getY()));
         cellArray.get(indexOfCell).resetSatiety();
+        System.out.println(indexOfCell);
     }
 
     private void spawnFoodAround(Coordinates coord, int noFood)
