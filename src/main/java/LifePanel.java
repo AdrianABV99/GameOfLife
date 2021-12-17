@@ -12,12 +12,19 @@ import static java.lang.Math.*;
 
 public class LifePanel extends JPanel implements ActionListener{
 
+
+    ArrayList<Thread> threadList = new ArrayList<>(100);
+
+
+
     enum ClickType{
         food,
-        cell
-    }
+        cell,
+        cellA
+    };
 
     JButton buttonCell = new JButton();
+    JButton buttonCellA = new JButton();
     JButton buttonFood = new JButton();
     JButton pauseButton = new JButton();
 
@@ -33,21 +40,30 @@ public class LifePanel extends JPanel implements ActionListener{
 
 
     ArrayList<Coordinates> foodCoord = new ArrayList<>();
-    ArrayList<Cell> cellA = new ArrayList<>();
+    ArrayList<Cell> cellArray = new ArrayList<>();
     Producer producer = new Producer();
-    int noCells=0;
+    int currentCellFromArray;
 
     public  LifePanel(){
 
         // type spawn buttons pannel
         buttonCell.setBounds(xPanel - 130,10,100,50);
         buttonCell.addActionListener(this);
-        buttonCell.setText("SET CELL");
+        buttonCell.setText("SET S CELL");
         buttonCell.setFocusable(false);
-        buttonCell.setBackground(new Color(30,177,0));
-        buttonCell.setForeground(new Color(123,1,23));
+        buttonCell.setBackground(new Color(12, 169, 217));
+        buttonCell.setForeground(new Color(255, 255, 255));
         this.add(buttonCell);
-        buttonFood.setBounds(xPanel - 130,70,100,50);
+
+        buttonCellA.setBounds(xPanel - 130,70,100,50);
+        buttonCellA.addActionListener(this);
+        buttonCellA.setText("SET A CELL");
+        buttonCellA.setFocusable(false);
+        buttonCellA.setBackground(new Color(30,177,0));
+        buttonCellA.setForeground(new Color(255, 255, 255));
+        this.add(buttonCellA);
+
+        buttonFood.setBounds(xPanel - 130,130,100,50);
         buttonFood.addActionListener(this);
         buttonFood.setText("SET FOOD");
         buttonFood.setFocusable(false);
@@ -55,7 +71,8 @@ public class LifePanel extends JPanel implements ActionListener{
         buttonFood.setForeground(new Color(255,255,255));
         this.add(buttonFood);
 
-        pauseButton.setBounds(xPanel - 130,130,100,50);
+
+        pauseButton.setBounds(xPanel - 130,190,100,50);
         pauseButton.addActionListener(this);
         pauseButton.setText("PAUSE");
         pauseButton.setFocusable(false);
@@ -76,12 +93,13 @@ public class LifePanel extends JPanel implements ActionListener{
                 int x = e.getX()/size;
                 int y = e.getY()/size;
                 if(spawn == ClickType.cell){
-                    System.out.println("Spawn cell");
-                    spawnCellAt( x, y);
+                    spawnCellAt(x, y, 's');
+                }
+                if(spawn == ClickType.cellA){
+                    spawnCellAt(x, y, 'a');
                 }
                 if(spawn == ClickType.food){
                     spawnFoodAt( x, y);
-                    System.out.println("Spawn food");
                 }
             }
             @Override
@@ -140,11 +158,13 @@ public class LifePanel extends JPanel implements ActionListener{
     }
 
     private void display(Graphics g){
-        g.setColor(Color.GREEN);
 
-        for(int x = 0; x<noCells; x++){
-            if(cellA.get(x).isAlive()) {
-                g.fillRect(cellA.get(x).getX() * size, cellA.get(x).getY() * size, size, size);
+
+        for(int x = 0; x<cellArray.size(); x++){
+            if(cellArray.get(x).isAlive()) {
+                if(cellArray.get(x).getType() == 'S') g.setColor(Color.RED);
+                else g.setColor(Color.GREEN);
+                g.fillRect(cellArray.get(x).getX() * size, cellArray.get(x).getY() * size, size, size);
             }
 
         }
@@ -178,23 +198,123 @@ public class LifePanel extends JPanel implements ActionListener{
         return noFood;
     }
 
-    private boolean checkCell(int i){
-        int x = cellA.get(i).getX();
-        int y = cellA.get(i).getY();
+    private boolean checkCell(int celPos){
+        int x = cellArray.get(celPos).getX();
+        int y = cellArray.get(celPos).getY();
 
         int food;
         if((food = checkForFood(x,y))!=0) {
-            cellA.get(i).eatFood(food);
+            cellArray.get(celPos).eatFood(food);
         }
 
 
-        if( cellA.get(i).canReproduce() )
+        return cellArray.get(celPos).isAlive();
+    }
+
+
+    public void actionPerformed(ActionEvent e){
+        boolean alive ;
+
+        if(e.getSource() == buttonCellA){
+            spawn = ClickType.cellA;
+            System.out.println("push the cellA button");
+            buttonFood.setForeground(Color.WHITE);
+            buttonCell.setForeground(Color.WHITE);
+            buttonCellA.setForeground(Color.RED);
+        }
+        if(e.getSource() == buttonCell){
+            spawn = ClickType.cell;
+            System.out.println("push the cell button");
+            buttonFood.setForeground(Color.WHITE);
+            buttonCellA.setForeground(Color.WHITE);
+            buttonCell.setForeground(Color.RED);
+        }
+        if(e.getSource() == buttonFood){
+            spawn = ClickType.food;
+            System.out.println("push the food button");
+            buttonCell.setForeground(Color.WHITE);
+            buttonCellA.setForeground(Color.WHITE);
+            buttonFood.setForeground(Color.RED);
+        }
+        if(e.getSource() == pauseButton){
+
+            if(!pause){
+                pauseButton.setBackground(Color.RED);
+                pauseButton.setForeground(Color.BLACK);
+                pauseButton.setText("CONTINUE");
+                pause = true;
+            }else{
+                pauseButton.setForeground(Color.BLACK);
+                pauseButton.setBackground(Color.YELLOW);
+                pauseButton.setText("PAUSE");
+                pause = false;
+            }
+
+        }
+
+
+        if(!pause) {
+            for( currentCellFromArray=0; currentCellFromArray<cellArray.size(); currentCellFromArray++){
+                threadList.get(currentCellFromArray).run();
+                }
+
+        }
+
+
+        repaint();
+    }
+
+    private void spawnFoodAt(int x, int y){
+        foodCoord.add(new Coordinates(x, y));
+    }
+
+    private void spawnCellAt(int x, int y,char cellType){
+        if(cellType == 'A' || cellType == 'a') {
+            cellArray.add(new ACell(x, y));
+            threadList.add(new Thread(){
+                public void run(){
+                    taskFroThread(threadList.indexOf(this));
+                }
+            });
+            threadList.get(cellArray.size()-1).start();
+        }
+        else if(cellType == 'S' || cellType == 's')
         {
-            spawnCellAround(cellA.get(i).getCoord());
-            cellA.get(i).resetFullness();
-            cellA.get(i).resetSatiety();
+                cellArray.add(new SCell(x, y));
+                threadList.add(new Thread(){
+
+                    public void run(){
+                            taskFroThread(threadList.indexOf(this));
+                        }
+                });
+                threadList.get(cellArray.size()-1).start();
+        }else
+        return;
+    }
+
+    private void spawnCellAround(Coordinates coord, char type)
+    {
+        ArrayList<Coordinates> freeSpace = checkSpaceAround(coord);
+        Collections.shuffle(freeSpace);
+        int auxX = freeSpace.get(0).getX();
+        int auxY =freeSpace.get(0).getY();
+        if(type == 'S') spawnCellAt(auxX,auxY,'s');
+        else spawnCellAt(auxX,auxY,'a');
+
+        int indexOfCell = cellArray.indexOf(new SCell(coord.getX(),coord.getY()));
+        cellArray.get(indexOfCell).resetSatiety();
+        System.out.println(indexOfCell);
+    }
+
+    private void spawnFoodAround(Coordinates coord, int noFood)
+    {
+        ArrayList<Coordinates> freeSpace = checkSpaceAround(coord);
+        freeSpace.add(coord);
+        Collections.shuffle(freeSpace);
+        for(int i=-0;i<noFood;i++)
+        {
+            foodCoord.add(freeSpace.get(i));
         }
-        return cellA.get(i).isAlive();
     }
 
     private ArrayList<Coordinates> checkSpaceAround(Coordinates coord)
@@ -209,8 +329,7 @@ public class LifePanel extends JPanel implements ActionListener{
                     int auxX = coord.getX() +i;
                     int auxY = coord.getY() +j;
                     Coordinates auxCoord = new Coordinates(auxX,auxY);
-                    if(!(foodCoord.contains(auxCoord)
-                        ||  cellA.contains(auxCoord) ))
+                    if(isEmptySpace(auxCoord))
                     {
                         freeSpace.add(auxCoord);
                     }
@@ -221,113 +340,17 @@ public class LifePanel extends JPanel implements ActionListener{
 
     }
 
-
-
-    public void actionPerformed(ActionEvent e){
-        boolean alive ;
-
-
-        if(e.getSource() == buttonCell){
-            spawn = ClickType.cell;
-            System.out.println("push the cell button");
-            buttonFood.setForeground(Color.WHITE);
-            buttonCell.setForeground(Color.RED);
-        }
-        if(e.getSource() == buttonFood){
-            spawn = ClickType.food;
-            System.out.println("push the food button");
-            buttonCell.setForeground(Color.WHITE);
-            buttonFood.setForeground(Color.RED);
-        }
-        if(e.getSource() == pauseButton){
-
-            if(!pause ){
-                pauseButton.setBackground(Color.RED);
-                pauseButton.setForeground(Color.BLACK);
-                pauseButton.setText("CONTINUE");
-                pause = true;
-            }else{
-                pauseButton.setForeground(Color.BLACK);
-                pauseButton.setBackground(Color.YELLOW);
-                pauseButton.setText("PAUSE");
-                pause = false;
-            }
-
-        }
-
-        if(!pause) {
-            for(int i = 0; i<noCells; i++){
-
-                int cellX = cellA.get(i).getX();
-                int cellY = cellA.get(i).getY();
-
-                alive = checkCell(i);
-                if (alive) {
-
-                    if(cellA.get(i).getSatiationLevel()>0) cellA.get(i).ageCell();
-                    else {
-
-                        Coordinates foodC = closestFood(cellA.get(i).getCoord());
-                        if(foodC == null) cellA.get(i).ageCell();
-                        else {//move cell
-                            int directionX = (int) signum(foodC.getX() - cellX);
-                            int directionY = (int) signum(foodC.getY() - cellY);
-                            cellA.get(i).moveCell(cellX + directionX, cellY + directionY);
-
-                        }
-                    }
-                }
-                //died
-                else {
-                    noCells--;
-                    Random random = new Random();
-                    int randomNumber = random.nextInt(6 - 1) + 1;
-                    Coordinates deadCoord = cellA.get(i).getCoord();
-                    cellA.remove(cellA.get(i));
-
-                    spawnFoodAround(deadCoord,randomNumber);
-
-                }
-
-            }
-
-        }
-
-
-        repaint();
-    }
-
-    private void spawnFoodAt(int x, int y){
-        foodCoord.add(new Coordinates(x, y));
-    }
-
-    private void spawnCellAt(int x, int y){
-        Cell c = new ACell('A',x, y);
-        cellA.add(c);
-        producer.send(c.hashCode(),c.toString());
-        noCells++;
-    }
-
-    private void spawnCellAround(Coordinates coord)
+    private boolean isEmptySpace(Coordinates coord)
     {
-        ArrayList<Coordinates> freeSpace = checkSpaceAround(coord);
-        Collections.shuffle(freeSpace);
-        int auxX = freeSpace.get(0).getX();
-        int auxY =freeSpace.get(0).getY();
-        spawnCellAt(auxX,auxY);
-        cellA.get(noCells-1).resetSatiety();
+
+
+        return !(foodCoord.contains(coord)
+                ||  cellArray.contains(new SCell(coord.getX(),coord.getY()))
+                ||  cellArray.contains(new ACell(coord.getX(),coord.getY()))
+                );
     }
 
-    private void spawnFoodAround(Coordinates coord, int noFood)
-    {
-        ArrayList<Coordinates> freeSpace = checkSpaceAround(coord);
-        freeSpace.add(coord);
-        Collections.shuffle(freeSpace);
-        for(int i=-0;i<noFood;i++)
-        {
-            foodCoord.add(freeSpace.get(i));
-        }
-    }
+
 
     public void putOnPause(){
         pause = true;
@@ -367,6 +390,141 @@ public class LifePanel extends JPanel implements ActionListener{
         }
 
         return closestFood;
+    }
+
+
+    private Coordinates closestPartner(Coordinates cellCoord)
+    {
+        ArrayList <Coordinates> possiblePartnerCoord = new ArrayList<>();
+        for(Cell c : cellArray)
+        {
+            if(c.getType()=='S' &&
+                    c.isFull() &&
+                    c.getCoord() != cellCoord)
+            {
+                possiblePartnerCoord.add(c.getCoord());
+            }
+        }
+
+        if(possiblePartnerCoord.isEmpty()) return null;
+
+        Coordinates closestPartner;
+        Coordinates auxCoord;
+
+        int cellX = cellCoord.getX();
+        int cellY = cellCoord.getY();
+
+        double closestDist;
+        double auxDist;
+
+        closestPartner = possiblePartnerCoord.get(0);
+        closestDist = Math.max(abs(closestPartner.getX() - cellX), abs(closestPartner.getY() - cellY));
+
+        int i;
+        for(i=1; i<possiblePartnerCoord.size(); i++)
+        {
+            auxCoord=possiblePartnerCoord.get(i);
+            auxDist = Math.max(abs(auxCoord.getX() - cellX), abs(auxCoord.getY() - cellY));
+
+            if(auxDist < closestDist) {
+                closestPartner = auxCoord;
+                closestDist = auxDist;
+            }
+
+        }
+
+        return closestPartner;
+    }
+
+
+
+    public void taskFroThread(int index){
+        boolean alive;
+
+        Cell currentCell = cellArray.get(index);
+        int cellX = currentCell.getX();
+        int cellY = currentCell.getY();
+
+        alive = checkCell(index);
+        if (alive) {
+
+            if(currentCell.isFull() && currentCell.getType() == 'S'){
+
+                Coordinates partnerC = closestPartner(currentCell.getCoord());
+
+
+
+                if(partnerC == null){
+                    if(currentCell.getSatiationLevel()>0) currentCell.ageCell();
+                    else {
+
+                        Coordinates foodC = closestFood(currentCell.getCoord());
+                        if(foodC == null) currentCell.ageCell();
+                        else {//move cell
+                            int directionX = (int) signum(foodC.getX() - cellX);
+                            int directionY = (int) signum(foodC.getY() - cellY);
+                            if(isEmptySpace(new Coordinates(cellX + directionX,cellY + directionY)))
+                                currentCell.moveCell(cellX + directionX, cellY + directionY);
+
+                        }
+                    }
+                }
+
+
+                else {//move cell
+                    int distToPartener = Math.max(abs(partnerC.getX() - cellX), abs(partnerC.getY() - cellY));
+
+                    if(distToPartener <= 1)
+                    {
+                        int otherCelIndex = cellArray.indexOf(new SCell(partnerC.getX(),partnerC.getY()));
+
+                        spawnCellAround(currentCell.getCoord(),currentCell.getType());
+                        currentCell.resetFullness();
+                        cellArray.get(otherCelIndex).resetFullness();
+
+                    }
+                    else {
+                        int directionX = (int) signum(partnerC.getX() - cellX);
+                        int directionY = (int) signum(partnerC.getY() - cellY);
+                        if (isEmptySpace(new Coordinates(cellX + directionX, cellY + directionY)))
+                            currentCell.moveCell(cellX + directionX, cellY + directionY);
+                    }
+
+                }
+            }
+            else if( currentCell.isFull() && currentCell.getType() == 'A')
+            {
+//                    spawnCellAround(currentCell.getCoord(),currentCell.getType());
+//                    currentCell.resetFullness();
+//                    currentCell.resetSatiety();
+            }
+            else if(currentCell.getSatiationLevel()>0) currentCell.ageCell();
+            else {
+
+                Coordinates foodC = closestFood(currentCell.getCoord());
+                if(foodC == null) currentCell.ageCell();
+                else {//move cell
+                    int directionX = (int) signum(foodC.getX() - cellX);
+                    int directionY = (int) signum(foodC.getY() - cellY);
+                    if(isEmptySpace(new Coordinates(cellX + directionX,cellY + directionY)))
+                        currentCell.moveCell(cellX + directionX, cellY + directionY);
+
+                }
+            }
+        }
+        //died
+        else {
+            Random random = new Random();
+            int randomNumber = random.nextInt(6 - 1) + 1;
+            Coordinates deadCoord = currentCell.getCoord();
+            cellArray.remove(currentCell);
+
+            threadList.get(index).stop();
+            threadList.remove(threadList.get(index));
+
+            spawnFoodAround(deadCoord,randomNumber);
+
+        }
     }
 
 }

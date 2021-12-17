@@ -1,22 +1,19 @@
 import java.util.Objects;
 
 abstract public class Cell {
-    protected char type;
-    protected int fullness;// ate 10 times
-    protected int numberOfEatingTimes;
-    protected int age;
+    private char type;
+    private int fullness;// ate 10 times
+    private int numberOfEatingTimes;
+    private int age;
 
-    protected int satietyDuration;
-    protected int starvationLevel;
-    protected final int maxSatietyDuration;
-    protected final int maxStarvationLevel;
+    private int satietyDuration;
+    private int starvationLevel;
+    private final int maxSatietyDuration;
+    private final int maxStarvationLevel;
 
-    protected Coordinates coord;
+    private Coordinates coord;
 
-    public Cell(char t, int x, int y, int satietyDuration, int starvationLevel) {
-
-        if(t!='A' || t!='S') t = 'A';
-        this.type = t;
+    public Cell(int x, int y, int satietyDuration, int starvationLevel) {
 
         coord = new Coordinates(x,y);
 
@@ -31,10 +28,8 @@ abstract public class Cell {
         this.starvationLevel = 0;
     }
 
-    public Cell(char t, int x, int y) {
+    public Cell(int x, int y) {
 
-        if(t!='A' || t!='S') t = 'A';
-        this.type = t;
 
         coord = new Coordinates(x,y);
         this.fullness = 0;
@@ -46,6 +41,11 @@ abstract public class Cell {
 
         this.satietyDuration = maxSatietyDuration;
         this.starvationLevel = 0;
+    }
+
+    public void setType(char t)
+    {
+        type = t;
     }
 
     public int ageCell()
@@ -100,7 +100,12 @@ abstract public class Cell {
 
     public boolean isFull()
     {
-        return fullness>=10;
+        return fullness>=3;
+    }
+
+    public int getFullness()
+    {
+        return fullness;
     }
 
     public void resetFullness()
@@ -122,6 +127,10 @@ abstract public class Cell {
     public void resetSatiety()
     {
         satietyDuration=0;
+    }
+
+    public char getType() {
+        return type;
     }
 
 
