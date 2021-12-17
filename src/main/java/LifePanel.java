@@ -146,8 +146,8 @@ public class LifePanel extends JPanel implements ActionListener{
 
     private void spawn(Graphics g){
         if (starts){
-            for(int x = 0; x<life.length/2; x++){
-                for (int y = 0;y< (yHeight)/2; y++){
+            for(int x = 0; x<life.length; x++){
+                for (int y = 0;y< (yHeight); y++){
                     if((x*y)%44==1){
                         foodCoord.add(new Coordinates(x,y));
                     }
@@ -298,12 +298,19 @@ public class LifePanel extends JPanel implements ActionListener{
         Collections.shuffle(freeSpace);
         int auxX = freeSpace.get(0).getX();
         int auxY =freeSpace.get(0).getY();
-        if(type == 'S') spawnCellAt(auxX,auxY,'s');
-        else spawnCellAt(auxX,auxY,'a');
 
-        int indexOfCell = cellArray.indexOf(new SCell(coord.getX(),coord.getY()));
+        int indexOfCell;
+        if(type == 'S'){
+            spawnCellAt(auxX,auxY,'s');
+            indexOfCell = cellArray.indexOf(new SCell(coord.getX(),coord.getY()));
+        }
+        else{
+            spawnCellAt(auxX,auxY,'a');
+            indexOfCell = cellArray.indexOf(new ACell(coord.getX(),coord.getY()));
+        }
+
+
         cellArray.get(indexOfCell).resetSatiety();
-        System.out.println(indexOfCell);
     }
 
     private void spawnFoodAround(Coordinates coord, int noFood)
@@ -494,9 +501,9 @@ public class LifePanel extends JPanel implements ActionListener{
             }
             else if( currentCell.isFull() && currentCell.getType() == 'A')
             {
-//                    spawnCellAround(currentCell.getCoord(),currentCell.getType());
-//                    currentCell.resetFullness();
-//                    currentCell.resetSatiety();
+                    spawnCellAround(currentCell.getCoord(),currentCell.getType());
+                    currentCell.resetFullness();
+                    currentCell.resetSatiety();
             }
             else if(currentCell.getSatiationLevel()>0) currentCell.ageCell();
             else {
