@@ -146,9 +146,9 @@ public class LifePanel extends JPanel implements ActionListener{
 
     private void spawn(Graphics g){
         if (starts){
-            for(int x = 0; x<life.length; x++){
-                for (int y = 0;y< (yHeight); y++){
-                    if((x*y)%44==1){
+            for(int x = 0; x<xWidth; x++){
+                for (int y = 0;y< yHeight; y++){
+                    if((x*y)%22==1){
                         foodCoord.add(new Coordinates(x,y));
                     }
                 }
@@ -270,24 +270,29 @@ public class LifePanel extends JPanel implements ActionListener{
 
     private void spawnCellAt(int x, int y,char cellType){
         if(cellType == 'A' || cellType == 'a') {
-            cellArray.add(new ACell(x, y));
-            threadList.add(new Thread(){
-                public void run(){
-                    taskFroThread(threadList.indexOf(this));
-                }
-            });
-            threadList.get(cellArray.size()-1).start();
+            if(isEmptySpace(new Coordinates(x,y))) {
+                cellArray.add(new ACell(x, y));
+                threadList.add(new Thread() {
+                    public void run() {
+                        taskFroThread(threadList.indexOf(this));
+                    }
+
+                });
+                threadList.get(cellArray.size() - 1).start();
+            }
         }
         else if(cellType == 'S' || cellType == 's')
         {
+            if(isEmptySpace(new Coordinates(x,y))) {
                 cellArray.add(new SCell(x, y));
-                threadList.add(new Thread(){
+                threadList.add(new Thread() {
 
-                    public void run(){
-                            taskFroThread(threadList.indexOf(this));
-                        }
+                    public void run() {
+                        taskFroThread(threadList.indexOf(this));
+                    }
                 });
-                threadList.get(cellArray.size()-1).start();
+                threadList.get(cellArray.size() - 1).start();
+            }
         }else
         return;
     }
@@ -315,10 +320,14 @@ public class LifePanel extends JPanel implements ActionListener{
 
     private void spawnFoodAround(Coordinates coord, int noFood)
     {
+
         ArrayList<Coordinates> freeSpace = checkSpaceAround(coord);
+        if(freeSpace.isEmpty()) return;
+        else if(freeSpace.size()<noFood) noFood = freeSpace.size();
+
         freeSpace.add(coord);
         Collections.shuffle(freeSpace);
-        for(int i=-0;i<noFood;i++)
+        for(int i=0;i<noFood;i++)
         {
             foodCoord.add(freeSpace.get(i));
         }
@@ -349,9 +358,9 @@ public class LifePanel extends JPanel implements ActionListener{
 
     private boolean isEmptySpace(Coordinates coord)
     {
-
-
-        return !(foodCoord.contains(coord)
+        if(coord.getX()>= xWidth || coord.getY() >= yHeight) return false;
+        else if(coord.getX()< 0 || coord.getY() < 0) return false;
+        else return !(foodCoord.contains(coord)
                 ||  cellArray.contains(new SCell(coord.getX(),coord.getY()))
                 ||  cellArray.contains(new ACell(coord.getX(),coord.getY()))
                 );
