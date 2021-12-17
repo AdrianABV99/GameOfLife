@@ -16,7 +16,7 @@ public class LifeFrame extends JFrame{
 
     public static void main(String[] args){
 
-       new LifeFrame();
+       LifeFrame life = new LifeFrame();
 
     }
 }
