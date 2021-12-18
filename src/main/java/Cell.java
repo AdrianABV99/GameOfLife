@@ -100,7 +100,7 @@ abstract public class Cell {
 
     public boolean isFull()
     {
-        return fullness>=3;
+        return fullness>=10;
     }
 
     public int getFullness()

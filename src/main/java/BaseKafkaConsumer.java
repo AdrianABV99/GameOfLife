@@ -52,7 +52,7 @@ public class BaseKafkaConsumer {
                 }
 
                 consumerRecords.forEach(record -> {
-                    System.out.printf("Consumer Record:(%d, %s, %d, %d)\n",
+                    System.out.printf("Consumer Record:(%d, %s)\n",
                             record.key(), record.value());
                 });
 
