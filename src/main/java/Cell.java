@@ -148,5 +148,9 @@ abstract public class Cell {
     }
 
     public abstract  boolean canReproduce();
+
+    public String toString() {
+        return this.type + " " + this.hashCode() + " " + this.numberOfEatingTimes;
+    }
 }
 

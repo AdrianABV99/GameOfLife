@@ -41,10 +41,13 @@ public class LifePanel extends JPanel implements ActionListener{
 
     ArrayList<Coordinates> foodCoord = new ArrayList<>();
     ArrayList<Cell> cellArray = new ArrayList<>();
-    Producer producer = new Producer();
+    Producer producer = new Producer("app-topic");
+    Producer producer2 = new Producer("score-producer");
+    BaseKafkaConsumer consumer = new BaseKafkaConsumer("score-producer");
     int currentCellFromArray;
 
     public  LifePanel(){
+
 
         // type spawn buttons pannel
         buttonCell.setBounds(xPanel - 130,10,100,50);
@@ -253,7 +256,7 @@ public class LifePanel extends JPanel implements ActionListener{
         }
 
 
-        if(!pause) {
+       if(!pause) {
             for( currentCellFromArray=0; currentCellFromArray<cellArray.size(); currentCellFromArray++){
                 threadList.get(currentCellFromArray).run();
                 }
@@ -271,12 +274,13 @@ public class LifePanel extends JPanel implements ActionListener{
     private void spawnCellAt(int x, int y,char cellType){
         if(cellType == 'A' || cellType == 'a') {
             if(isEmptySpace(new Coordinates(x,y))) {
-                cellArray.add(new ACell(x, y));
+                ACell cell = new ACell(x,y);
+                cellArray.add(cell);
+                producer.send(cell.hashCode(),cell.toString());
                 threadList.add(new Thread() {
                     public void run() {
                         taskFroThread(threadList.indexOf(this));
                     }
-
                 });
                 threadList.get(cellArray.size() - 1).start();
             }
@@ -284,7 +288,9 @@ public class LifePanel extends JPanel implements ActionListener{
         else if(cellType == 'S' || cellType == 's')
         {
             if(isEmptySpace(new Coordinates(x,y))) {
-                cellArray.add(new SCell(x, y));
+                SCell cell = new SCell(x,y);
+                cellArray.add(cell);
+                producer.send(cell.hashCode(),cell.toString());
                 threadList.add(new Thread() {
 
                     public void run() {
@@ -292,6 +298,7 @@ public class LifePanel extends JPanel implements ActionListener{
                     }
                 });
                 threadList.get(cellArray.size() - 1).start();
+
             }
         }else
         return;
@@ -454,7 +461,7 @@ public class LifePanel extends JPanel implements ActionListener{
 
 
 
-    public void taskFroThread(int index){
+   synchronized public void taskFroThread(int index){
         boolean alive;
 
         Cell currentCell = cellArray.get(index);
@@ -533,11 +540,10 @@ public class LifePanel extends JPanel implements ActionListener{
             Random random = new Random();
             int randomNumber = random.nextInt(6 - 1) + 1;
             Coordinates deadCoord = currentCell.getCoord();
+            producer2.send(currentCell.hashCode(),currentCell.toString());
+            consumer.runConsumer();
             cellArray.remove(currentCell);
-
-            threadList.get(index).stop();
             threadList.remove(threadList.get(index));
-
             spawnFoodAround(deadCoord,randomNumber);
 
         }
